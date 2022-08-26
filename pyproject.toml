@@ -3,6 +3,9 @@ name = "python-tpln"
 version = "0.1.0"
 description = ""
 authors = ["Dylan <dylan.robins@gmail.com>"]
+packages = [
+    {include = "tpln"}
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"

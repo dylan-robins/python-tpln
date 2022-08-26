@@ -33,8 +33,8 @@ THIS IS NOT A STANDALONE APPLICATION. If you're looking to replace Cron or somet
 ### Installing
 
 Three options are available to you:
-1. Install it using pip: `pip install tpln`
-2. Add it as a dependency in your Poetry project: `poetry add tpln`
+1. Install it using pip: `pip install python-tpln`
+2. Add it as a dependency in your Poetry project: `poetry add python-tpln`
 3. Download the library source code, and include it into your codebase somewhere accessible through your PYTHONPATH. You'll have to do the same with any dependencies, and I won't be able to provide support for this as there are too many platform-specific issues to deal with.
 
 ## Version History
