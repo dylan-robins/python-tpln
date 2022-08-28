@@ -26,7 +26,7 @@ class SleepTask(Task):
         self.duration = duration
 
     async def main(self):
-        
+
         _logger.info(f"[{self}] Sleeping for {self.duration} seconds...")
         await aio.sleep(self.duration)
         _logger.info(f"[{self}] Slept for {self.duration} seconds.")

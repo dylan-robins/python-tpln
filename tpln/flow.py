@@ -7,14 +7,11 @@ from __future__ import annotations
 
 import asyncio as aio
 import logging
-import threading
+import multiprocessing
 from typing import Iterator
 from uuid import UUID
 
-import matplotlib.animation as anim
-import matplotlib.pyplot as plt
 import networkx as nx
-from networkx.drawing.nx_agraph import graphviz_layout
 
 from .tasks import Task, TaskState
 
@@ -27,6 +24,7 @@ class Flow:
         self.graph = nx.DiGraph()
         self.task_groups: dict[str, aio.Semaphore] = {}
         self.event_loop = aio.new_event_loop()
+        self.gui_msg_queue = multiprocessing.Queue()
 
     def register_task(self, task: Task):
         self.tasks.add(task)
@@ -52,42 +50,6 @@ class Flow:
         for id in nx.topological_sort(self.graph):
             yield self.graph.nodes[id]["task_obj"]
 
-    def visualize(self):
-        def _plotter_thread():
-            fig = plt.figure()
-            ax = plt.gca()
-
-            pos = graphviz_layout(self.graph, prog="dot")
-            cmap = {
-                TaskState.pending: "gray",
-                TaskState.running: "skyblue",
-                TaskState.done: "limegreen",
-            }
-
-            def _update(frame):
-                node_name_mapping = {task.id: task.name for task in self.tasks}
-                node_color_mapping = [
-                    cmap[self.get_task_by_id(node).state] for node in self.graph
-                ]
-                ax.clear()
-                nx.draw(
-                    self.graph,
-                    node_size=700,
-                    with_labels=True,
-                    labels=node_name_mapping,
-                    node_color=node_color_mapping,
-                    pos=pos,
-                    ax=ax,
-                )
-                return (fig,)
-
-            a = anim.FuncAnimation(fig, _update, frames=1, repeat=True, interval=1)
-            plt.show()
-
-        th = threading.Thread(target=_plotter_thread)
-        th.start()
-        return th
-
     def iter_predecessors(self, task: Task) -> list[Task]:
         predecessor_ids = list(self.graph.predecessors(task.id))
         return [other for other in self.tasks if other.id in predecessor_ids]
@@ -101,7 +63,9 @@ class Flow:
                     predecessor.state == TaskState.done
                     for predecessor in self.iter_predecessors(task)
                 ):
-                    await aio.sleep(0.5) # Arbitrary sleep time, should probably be user-configurable
+                    await aio.sleep(
+                        0.5
+                    )  # Arbitrary sleep time, should probably be user-configurable
 
                 _logger.info(f"Running {task}...")
                 self.event_loop.create_task(task.run(self))

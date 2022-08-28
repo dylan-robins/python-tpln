@@ -14,7 +14,7 @@ def test_bad_task_inheritance():
         pass
 
     with pytest.raises(TypeError):
-        _cust_task("CUSTOM_TASK") # type: ignore
+        _cust_task("CUSTOM_TASK")  # type: ignore
 
 
 class cust_task(Task):

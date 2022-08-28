@@ -35,6 +35,11 @@ class Task(ABC):
         self.group_name = group_name
         self.state = TaskState.pending
 
+    def set_state(self, new_state: TaskState, flow: Flow | None = None):
+        self.state = new_state
+        if flow:
+            flow.gui_msg_queue.put((self.id, self.state))
+
     async def run(self, pipe: Flow, **kwargs):
         """
         This method runs the task, taking care of setup and teardown between
@@ -44,11 +49,11 @@ class Task(ABC):
         if self.group_name:
             await pipe.task_groups[self.group_name].acquire()
 
-        self.state = TaskState.running
+        self.set_state(TaskState.running, pipe)
 
         await self.main(**kwargs)
 
-        self.state = TaskState.done
+        self.set_state(TaskState.done, pipe)
 
         if self.group_name:
             pipe.task_groups[self.group_name].release()

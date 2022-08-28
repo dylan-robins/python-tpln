@@ -3,21 +3,27 @@
 # vim: set fileencoding=utf-8
 # *****************************************************************************#
 
+import asyncio as aio
 import logging
 from time import sleep
 
+import matplotlib.pyplot as plt
+import networkx as nx
+
 from .flow import Flow
-from .tasks import ShellTask, SleepTask
+from .flow_gui import FlowVisualizer
+from .tasks import ShellTask, SleepTask, TaskState
 
 
 def example_flow():
-    logging.basicConfig(level=logging.INFO, format="### %(levelname)s: %(message)s")
+    logging.basicConfig(level=logging.DEBUG, format="### %(levelname)s: %(message)s")
+    logging.getLogger("matplotlib").setLevel(logging.WARNING)
     logger = logging.getLogger(__name__)
 
-    pipe = Flow()
-    pipe.create_task_group("workers", 2)
+    flow = Flow()
+    flow.create_task_group("workers", 2)
 
-    preprocess_task = ShellTask(name="Preprocess", dependencies=[], command="ls -la")
+    preprocess_task = ShellTask(name="Preprocess", command="ls -la")
 
     a_task = SleepTask(
         name="A", dependencies=[preprocess_task], duration=10, group_name="workers"
@@ -34,7 +40,7 @@ def example_flow():
         name="post_process", dependencies=[a_task, b_task, c_task, d_task], duration=3
     )
 
-    pipe.register_tasks(
+    flow.register_tasks(
         preprocess_task,
         a_task,
         b_task,
@@ -44,17 +50,15 @@ def example_flow():
     )
 
     logger.info("Graph iteration order:")
-    for i, task in enumerate(pipe.iter_graph(), start=1):
+    for i, task in enumerate(flow.iter_graph(), start=1):
         logger.info(f"{i}. {task}")
 
-    subproc = pipe.visualize()
-
-    sleep(2)
+    viz = FlowVisualizer(flow)
 
     logger.info("Running Flow")
-    pipe.run()
+    flow.run()
+    viz.join()
 
-    subproc.join()
 
 if __name__ == "__main__":
     example_flow()

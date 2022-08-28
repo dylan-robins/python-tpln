@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-tpln"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Dylan <dylan.robins@gmail.com>"]
 packages = [
@@ -19,6 +19,7 @@ pytest = "^6.2.5"
 black = "^22.6.0"
 pylint = "^2.15.0"
 pytest-cov = "^3.0.0"
+pytest-mock = "^3.8.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
